@@ -1,0 +1,142 @@
+{
+  "name": "excessive_load_on_cassandra",
+  "description": "Excessive load on Cassandra incident refers to a situation where there is an overload of requests or data processing on the Cassandra database management system. This can cause the system to slow down or even crash, resulting in service disruptions and downtime. This incident can occur due to various factors such as increased user traffic, inefficient queries, or hardware issues.",
+  "params": [
+    {
+      "name": "TABLE_NAME",
+      "value": ""
+    },
+    {
+      "name": "CASSANDRA_NODE_IP",
+      "value": ""
+    },
+    {
+      "name": "KEYSPACE",
+      "value": ""
+    },
+    {
+      "name": "CASSANDRA_NODE",
+      "value": ""
+    },
+    {
+      "name": "NEW_NODE_IP",
+      "value": ""
+    },
+    {
+      "name": "DATACENTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NEW_NODE_NAME",
+      "value": ""
+    },
+    {
+      "name": "KEYSPACE_NAME",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Excessive Load on Cassandra\nExcessive load on Cassandra incident refers to a situation where there is an overload of requests or data processing on the Cassandra database management system. This can cause the system to slow down or even crash, resulting in service disruptions and downtime. This incident can occur due to various factors such as increased user traffic, inefficient queries, or hardware issues."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the number of connections to Cassandra"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh ${CASSANDRA_NODE} \"nodetool info | grep 'Native Transport'\"`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the disk usage on the Cassandra nodes"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh ${CASSANDRA_NODE} \"df -h\"`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU usage on the Cassandra nodes"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh ${CASSANDRA_NODE} \"top -b -n 1 | grep Cpu\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the read/write latencies on Cassandra"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh ${CASSANDRA_NODE} \"nodetool cfstats | grep -A 10 'Keyspace: ${KEYSPACE}'\"`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Cassandra system log"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh ${CASSANDRA_NODE} \"tail -n 100 /var/log/cassandra/system.log\"`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increased traffic on the application leading to a higher number of requests to the Cassandra database."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_cassandra_diagnostic($TABLE_NAME, $KEYSPACE, $KEYSPACE_NAME)"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Scale up the Cassandra cluster by adding more nodes to handle the increased load."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_add_node_to_cassandra_cluster($CASSANDRA_NODE_IP, $NEW_NODE_IP, $DATACENTER_NAME, $NEW_NODE_NAME)"
+    }
+  ]
+}
